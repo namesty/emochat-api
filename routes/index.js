@@ -17,8 +17,7 @@ const isAutenticated = (req, res, next) => {
   })(req, res, next);
 };
 
-router.get("/", isAutenticated, (req, res, next) => {
-  res.json({ message: "Autorizado" });
-});
+router.use("/message", isAutenticated, require('./message'));
+router.use("/user", isAutenticated, require('./user'));
 
 module.exports = router;

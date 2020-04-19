@@ -5,10 +5,10 @@ const bcrypt = require("bcryptjs");
 
 router.post("/", async (req, res) => {
 
-  const { username, password, email, name } = req.body;
+  const { lastName, password, email, name } = req.body;
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ email });
     if (user) return res.status(409).json({ error: "El usuario ya existe" });
  
   
@@ -18,7 +18,7 @@ router.post("/", async (req, res) => {
 
   try {
     const hashPass = bcrypt.hashSync(password, 10);
-    const user = new User({ username, password: hashPass, email, name });
+    const user = new User({ lastName, password: hashPass, email, name });
 
     await user.save();
 
