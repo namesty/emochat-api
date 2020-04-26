@@ -1,4 +1,4 @@
 
-const uri = "mongodb+srv://emochatapi:d5gjeHAN5c3PDaxG@cluster0-6pijq.mongodb.net/emochat?retryWrites=true&w=majority"
+const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0-6pijq.mongodb.net/${process.env.MONGO_DB_NAME}?retryWrites=true&w=majority`
 
 module.exports = uri

@@ -7,12 +7,14 @@ const LocalStrategy = require("passport-local").Strategy;
 const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const bcrypt = require("bcryptjs");
-const socketio = require('socket.io')
+const cors = require('cors')
+require('./socketio')
 
 const uri = require('./config/db')
 
 const app = express();
 
+app.use(cors({ origin: '*'}))
 app.use(passport.initialize());
 
 passport.use(
