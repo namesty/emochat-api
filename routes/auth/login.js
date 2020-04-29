@@ -12,7 +12,10 @@ router.post("/", (req, res) => {
     const payload = {
       sub: user._id,
       exp: Date.now() + parseInt(process.env.JWT_EXPIRES),
-      email: user.email
+      email: user.email,
+      name: user.name,
+      lastName: user.lastName,
+      id: user._id
     };
 
     const token = jwt.sign(JSON.stringify(payload), process.env.JWT_SECRET );
