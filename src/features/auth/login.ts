@@ -1,7 +1,8 @@
-const express = require("express");
+import express from "express"
+import passport from "passport"
+import jwt from "jsonwebtoken"
+
 const router = express.Router();
-const passport = require("passport");
-const jwt = require("jsonwebtoken");
 
 router.post("/", (req, res) => {
 
@@ -32,4 +33,4 @@ router.post("/", (req, res) => {
   })(req, res);
 });
 
-module.exports = router;
+export { router }

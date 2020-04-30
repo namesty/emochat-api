@@ -1,7 +1,8 @@
-const express = require("express");
+import express from "express"
+import bcrypt from "bcryptjs"
+import { User } from '../user'
+
 const router = express.Router();
-const User = require("../../models/User");
-const bcrypt = require("bcryptjs");
 
 router.post("/", async (req, res) => {
 
@@ -10,8 +11,8 @@ router.post("/", async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (user) return res.status(409).json({ error: "El usuario ya existe" });
- 
-  
+
+
   } catch (error) {
     res.status(500).json({ message: "Hubo un error" });
   }
@@ -28,4 +29,4 @@ router.post("/", async (req, res) => {
   }
 });
 
-module.exports = router;
+export { router }
