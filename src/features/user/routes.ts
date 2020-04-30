@@ -7,7 +7,7 @@ router.get("/", async (req, res) => {
 
   const users = await findAllUsers()
 
-  res.status(200).json({ users })
+  res.status(200).json(users)
 
 });
 

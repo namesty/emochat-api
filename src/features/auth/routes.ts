@@ -4,7 +4,7 @@ import { router as SignupRouter } from './signup'
 
 const router = express.Router();
 
-router.use("/signup", LoginRouter)
-router.use("/login", SignupRouter)
+router.use("/login", LoginRouter)
+router.use("/signup", SignupRouter)
 
 export { router }

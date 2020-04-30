@@ -15,7 +15,7 @@ interface MongooseMessage extends mongoose.Document {
   date: string
 }
 
-const MessageSchema = new mongoose.Schema({
+export const MessageSchema = new mongoose.Schema({
   from: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
