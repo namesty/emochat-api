@@ -1,84 +1,102 @@
-import { Conversation, IConversation } from "./model";
-import { IMessage } from "../message";
-import { IUser } from "../user";
+import { Conversation, IConversation, conversationMapper } from "./model";
+import { IMessage, Message } from "../message";
 
-export const createConversation = async (userId1: string, userId2: string) => {
+export async function createConversation(
+  userId1: string,
+  userId2: string
+): Promise<IConversation> {
   let conversation = await Conversation.findOne({
     $or: [
       {
-        user1: userId1,
-        user2: userId2,
-        active: true,
+        users: {
+          $elemMatch: {
+            id: userId1,
+            active: true,
+          },
+        },
       },
       {
-        user1: userId2,
-        user2: userId1,
-        active: true,
+        users: {
+          $elemMatch: {
+            id: userId2,
+            active: true,
+          },
+        },
       },
     ],
   })
-    .populate("user1")
-    .populate("user2")
+    .populate("users")
     .exec();
 
   if (!conversation) {
     conversation = await Conversation.create({
-      user1: userId1,
-      user2: userId2,
+      users: [userId1, userId2],
     });
+
+    conversation = await conversation.populate("users").execPopulate();
   }
 
-  return {
-    id: conversation.id,
-    user1: conversation.user1 as IUser,
-    user2: conversation.user2 as IUser,
-    date: conversation.date,
-    messages: conversation.messages,
-    emotions: conversation.emotions,
-    active: conversation.active,
-  } as IConversation;
+  return conversationMapper(conversation);
+}
+
+export const findConversation = async (id: string) => {
+  return await Conversation.findOne({
+    _id: id,
+    active: true,
+  })
+    .populate("users")
+    .populate({ path: "messages", 
+      populate: {
+        path: "from",
+        model: 'User'
+      }
+    })
+    .exec();
 };
 
 export const addMessage = async (conversationId: string, message: IMessage) => {
-  const conversation = await Conversation.findOne({
-    id: conversationId,
-    active: true,
-  });
+  const createdMessage = await Message.create({
+    from: message.from.id,
+    content: message.content,
+  })
+
+  const populatedMessage = await createdMessage.populate('from').execPopulate()
+
+  const conversation = await Conversation.findByIdAndUpdate(conversationId, {
+    $push: {
+      messages: populatedMessage,
+    },
+  })
+    .populate("users")
+    .populate({ path: "messages", 
+      populate: {
+        path: "from",
+        model: 'User'
+      }
+    })
+    .exec();
 
   if (!conversation) throw new Error("No conversation found with this id");
 
-  conversation.messages = [...conversation.messages, message];
-
-  await conversation.save();
+  return conversationMapper(conversation);
 };
 
 export const getConversations = async (userId: string) => {
   const conversations = await Conversation.find({
-    $or: [
-      {
-        user1: userId,
-        active: true,
-      },
-      {
-        user2: userId,
-        active: true,
-      },
-    ],
+    users: userId,
   })
-    .populate("user1")
-    .populate("user2");
+    .populate("users")
+    .populate({ path: "messages", 
+      populate: {
+        path: "from",
+        model: 'User'
+      }
+    })
+    .exec();
 
-  return conversations.map((c) => {
-    return {
-      id: c.id,
-      user1: c.user1 as IUser,
-      user2: c.user2 as IUser,
-      date: c.date,
-      messages: c.messages,
-      emotions: c.emotions,
-      active: c.active,
-    } as IConversation;
-  });
+    console.log(conversations.map(c => c.messages))
+
+  return conversations.map(conversationMapper);
 };
 
 export const deleteConversation = async (conversationId: string) => {
@@ -90,5 +108,7 @@ export const deleteConversation = async (conversationId: string) => {
   if (!conversation) throw new Error("No conversation found with this id");
 
   conversation.active = false;
-  await conversation.save();
+  const deletedConv = await conversation.save();
+
+  return conversationMapper(deletedConv);
 };

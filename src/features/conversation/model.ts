@@ -1,12 +1,12 @@
 import mongoose from 'mongoose'
-import { IUser } from '../user'
-import { IMessage, MessageSchema } from '../message'
+import { IUser, MongooseUser, userMapper } from '../user'
+import { IMessage, MessageSchema, messageMapper, MongooseMessage } from '../message'
 import { IEmotion } from '../emotion'
 import { EmotionSchema } from '../emotion/model'
 
 export interface IConversation {
-  user1: IUser | string,
-  user2: IUser | string,
+  id: string
+  users: IUser[]
   messages: IMessage[],
   emotions: IEmotion[],
   date: string,
@@ -14,27 +14,46 @@ export interface IConversation {
 }
 
 interface MongooseConversation extends mongoose.Document {
-  user1: IUser | string,
-  user2: IUser | string,
-  messages: IMessage[],
+  users: MongooseUser[] | string[],
+  messages: MongooseMessage[] | string[],
   emotions: IEmotion[],
   date: string,
   active: boolean
 }
 
+export function conversationMapper (mongoConv: MongooseConversation): IConversation {
+
+  if(mongoConv.users[0] === 'string') {
+    throw new Error("Conversations query did not populate users")
+  }
+
+  if(typeof mongoConv.messages[0] === 'string') {
+    throw new Error("Conversations query did not populate messages")
+  }
+
+  return {
+    id: mongoConv.id,
+    users: (mongoConv.users as MongooseUser[]).map(userMapper),
+    messages: (mongoConv.messages as MongooseMessage[]).map(messageMapper),
+    emotions: mongoConv.emotions,
+    date: mongoConv.date,
+    active: mongoConv.active
+  }
+}
+
 const ConversationSchema = new mongoose.Schema({
-  user1: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  user2: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+  users: {
+    type: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }],
     required: true,
   },
   messages: {
-    type: [MessageSchema],
+    type: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Message'
+    }],
     default: []
   },
   emotions: {

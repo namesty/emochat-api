@@ -9,14 +9,14 @@ import { Strategy as JwtStrategy } from "passport-jwt"
 import { ExtractJwt } from "passport-jwt"
 import bcrypt from "bcryptjs"
 import cors from 'cors'
-import { initialize as initializeSockets } from './sockets'
+import { ConversationSocket } from './sockets/conversation'
 import { User } from "./features/user"
 import { uri } from './config/db'
 import { router as MainRouter } from './routes'
 import { router as AuthRouter } from './features/auth/routes'
 
 const app = express();
-initializeSockets()
+const conversationHandler = new ConversationSocket()
 
 app.use(cors({ origin: '*'}))
 app.use(passport.initialize());

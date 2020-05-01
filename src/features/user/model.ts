@@ -7,7 +7,7 @@ export interface IUser {
   email: string
 }
 
-interface MongooseUser extends mongoose.Document {
+export interface MongooseUser extends mongoose.Document {
   id: string
   name: string
   lastName: string
@@ -16,7 +16,16 @@ interface MongooseUser extends mongoose.Document {
   date: string
 }
 
-const UserSchema = new mongoose.Schema({
+export function userMapper(mongoUser: MongooseUser): IUser {
+  return {
+    id: mongoUser.id,
+    name: mongoUser.name,
+    lastName: mongoUser.lastName,
+    email: mongoUser.email
+  }
+}
+
+export const UserSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,

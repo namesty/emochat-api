@@ -1,27 +1,35 @@
 import mongoose from 'mongoose'
-import { IUser } from '../user'
+import { IUser, MongooseUser, userMapper } from '../user'
 
 export interface IMessage {
-  from: IUser | string,
-  to: IUser | string,
+  id: string,
+  from: IUser,
   content: string,
   date: string
 }
 
-interface MongooseMessage extends mongoose.Document {
-  from: IUser | string,
-  to: IUser | string,
+export interface MongooseMessage extends mongoose.Document {
+  id: string
+  from: MongooseUser | string,
   content: string,
   date: string
+}
+
+export const messageMapper = (mongoMessage: MongooseMessage) => {
+  if(typeof mongoMessage.from === 'string') {
+    throw new Error('Users in messages were not populated')
+  }
+
+  return {
+    id: mongoMessage.id,
+    from: userMapper(mongoMessage.from),
+    content: mongoMessage.content,
+    date: mongoMessage.date
+  }
 }
 
 export const MessageSchema = new mongoose.Schema({
   from: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  to: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
