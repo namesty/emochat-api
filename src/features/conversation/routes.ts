@@ -6,17 +6,18 @@ import { IMessage } from '../message';
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-  const { toId }: { toId: string } = req.body
+  const { userIds }: { userIds: string[] } = req.body
   const user = req.user as IUser
 
-  const conversation = await createConversation(user.id, toId)
+  userIds.push(user.id)
+
+  const conversation = await createConversation(userIds)
 
   res.status(200).json(conversation)
 })
 
 router.get("/", async (req, res) => {
   const user = req.user as any
-  console.log(user._id)
   const conversations = await getConversations(user._id)
 
   res.status(200).json(conversations)

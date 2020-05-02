@@ -2,35 +2,24 @@ import { Conversation, IConversation, conversationMapper } from "./model";
 import { IMessage, Message } from "../message";
 
 export async function createConversation(
-  userId1: string,
-  userId2: string
+  userIds: string[],
 ): Promise<IConversation> {
   let conversation = await Conversation.findOne({
-    $or: [
-      {
-        users: {
-          $elemMatch: {
-            id: userId1,
-            active: true,
-          },
-        },
-      },
-      {
-        users: {
-          $elemMatch: {
-            id: userId2,
-            active: true,
-          },
-        },
-      },
-    ],
+    users: {
+      $all: userIds.map(uid => {
+        return {
+          _id: uid
+        }
+      })
+    },
+    active: true
   })
     .populate("users")
     .exec();
 
   if (!conversation) {
     conversation = await Conversation.create({
-      users: [userId1, userId2],
+      users: userIds,
     });
 
     conversation = await conversation.populate("users").execPopulate();
@@ -93,8 +82,6 @@ export const getConversations = async (userId: string) => {
       }
     })
     .exec();
-
-    console.log(conversations.map(c => c.messages))
 
   return conversations.map(conversationMapper);
 };

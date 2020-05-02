@@ -1,7 +1,7 @@
-import { User } from "./model"
+import { User, userMapper } from "./model"
 
 export const findAllUsers = async () => {
-  const users = await User.find({}, { password: 0, date: 0, __v: 0 })
+  return (await User.find({}, { password: 0, date: 0, __v: 0 })).map(userMapper)
 }
 
 export const findUser = async (id: string) => {

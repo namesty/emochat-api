@@ -19,7 +19,6 @@ export const createMessage = async ({
 
   const message = await Message.create({
     from: fromId,
-    to: toUser._id,
     content,
   });
 

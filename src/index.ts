@@ -31,7 +31,6 @@ passport.use(
     // Dado que no haremos uso de sesiones, es necesaria especificarlo en las distintas estrategias poniendolo a false.
     session: false
   }, async (email, password, next) => {
-    console.log(`Estrategia local. Información recibida: email ${email}, password${password}`)
     try {
       // Buscamos el usuario a travñes del email
       const user = await User.findOne({ email });
@@ -63,7 +62,6 @@ const opts = {
 
 passport.use(
   new JwtStrategy(opts, async (tokenPayload, next) => {
-    console.log(`Estrategia jwt. Información recibida: token ${tokenPayload}`)
 
     try {
       const user = await User.findOne({ _id: tokenPayload.sub });

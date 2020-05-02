@@ -1,5 +1,5 @@
 import io, { Socket } from "socket.io";
-import { IUser, findUser } from "../features/user";
+import { IUser } from "../features/user";
 import lodash from "lodash";
 import jwt from "jsonwebtoken";
 import { IMessage } from "../features/message";
@@ -24,22 +24,22 @@ export class ConversationSocket {
     this.server.sockets.on('connection', this.onConnect)
   }
 
-  private async onConnect(socket: Socket) {
+  private onConnect = async (socket: Socket) => {
     socket.emit('askForToken')
     socket.on('sendToken', (data: any) => this.onSendToken(socket, data))
     socket.on('newMessage', this.onNewMessage)
     socket.on('disconnect', this.onDisconnect)
   }
 
-  private findBySocket(socket: Socket) {
+  private findBySocket = (socket: Socket) => {
     return this.connectedUsers.find(u => lodash.isEqual(u.socket, socket))
   }
 
-  private findByEmail(email: string) {
+  private findByEmail = (email: string) => {
     return this.connectedUsers.find((u) => u.user.email.toString() === email);
   }
 
-  private onSendToken(socket: Socket, data: any) {
+  private onSendToken = (socket: Socket, data: any) => {
     if(data) {
       const { email, id, name, lastName } = jwt.decode(data) as IUser;
       const found = this.findBySocket(socket);
@@ -60,22 +60,22 @@ export class ConversationSocket {
     }
   }
 
-  private async onNewMessage (data: NewMessageData) {
+  private onNewMessage = async (data: NewMessageData) => {
     const { conversationId, message } = data
     
     const conversation = await addMessage(conversationId, message)
-    const convoUsers = conversation.users.filter(u => u.id !== message.from.id)
 
-    convoUsers.forEach(u => {
+    conversation.users.forEach(u => {
       const onlineUser = this.findByEmail(u.email)
 
       if(onlineUser){
-        onlineUser.socket.emit('newMessage', message)
+        console.log('emitted')
+        onlineUser.socket.emit('newMessage', data)
       }
     })
   }
 
-  private onDisconnect(socket: Socket) {
+  private onDisconnect = (socket: Socket) => {
     const index = this.connectedUsers.map((u) => u.socket).indexOf(socket);
     this.connectedUsers.splice(index, 1);
   }
