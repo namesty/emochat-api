@@ -1,27 +1,27 @@
 import mongoose from 'mongoose'
 
 export const EmotionSchema = new mongoose.Schema({
-  happiness: {
+  Happy: {
     type: Number,
     required: true,
   },
-  anger: {
+  Angry: {
     type: Number,
     required: true,
   },
-  fear: {
+  Fear: {
     type: Number,
     required: true,
   },
-  boredom: {
+  Bored: {
     type: Number,
     required: true,
   },
-  excitement: {
+  Excited: {
     type: Number,
     required: true,
   },
-  sadness: {
+  Sad: {
     type: Number,
     required: true,
   },

@@ -1,9 +1,13 @@
 export interface IEmotion {
-  happiness: number,
-  anger: number,
-  fear: number,
-  boredom: number,
-  excitement: number,
-  sadness: number,
-  date: string
+  Happy: number,
+  Angry: number,
+  Fear: number,
+  Bored: number,
+  Excited: number,
+  Sad: number
+  date?: string
+}
+
+export interface IEmotionDTO {
+  emotion: IEmotion[]
 }

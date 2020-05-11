@@ -1,10 +1,11 @@
 import io, { Socket } from "socket.io";
 import { IUser } from "../features/user";
-import lodash from "lodash";
+import lodash, { isEqual } from "lodash";
 import jwt from "jsonwebtoken";
 import { IMessage } from "../features/message";
 import { addMessage } from '../features/conversation/controller'
 
+//TODO: Luxon en lugar de moment
 interface ConnectedUser {
   user: IUser;
   socket: Socket;
@@ -14,6 +15,8 @@ interface NewMessageData {
   conversationId: string,
   message: IMessage
 }
+
+//TODO: pasar el puerto a variable semantica (DotEnv)
 
 export class ConversationSocket {
 
@@ -65,18 +68,14 @@ export class ConversationSocket {
     
     const conversation = await addMessage(conversationId, message)
 
-    conversation.users.forEach(u => {
-      const onlineUser = this.findByEmail(u.email)
-
-      if(onlineUser){
-        console.log('emitted')
-        onlineUser.socket.emit('newMessage', data)
+    this.connectedUsers.forEach(u => {
+      if(conversation.users.map(convoUser => convoUser.email).includes(u.user.email)) {
+        u.socket.emit('newMessage', data)
       }
     })
   }
 
   private onDisconnect = (socket: Socket) => {
-    const index = this.connectedUsers.map((u) => u.socket).indexOf(socket);
-    this.connectedUsers.splice(index, 1);
+    this.connectedUsers = this.connectedUsers.filter((u) => !isEqual(u.socket, socket))
   }
 }

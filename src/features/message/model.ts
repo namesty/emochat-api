@@ -15,7 +15,7 @@ export interface MongooseMessage extends mongoose.Document {
   date: string
 }
 
-export const messageMapper = (mongoMessage: MongooseMessage) => {
+export const messageMapper = (mongoMessage: MongooseMessage): IMessage => {
   if(typeof mongoMessage.from === 'string') {
     throw new Error('Users in messages were not populated')
   }

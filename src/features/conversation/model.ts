@@ -4,6 +4,8 @@ import { IMessage, MessageSchema, messageMapper, MongooseMessage } from '../mess
 import { IEmotion } from '../emotion'
 import { EmotionSchema } from '../emotion/model'
 
+//TODO: la parte de mongoose va en infastructure. Las interfaces no se prefijan con 'I'
+
 export interface IConversation {
   id: string
   users: IUser[]
