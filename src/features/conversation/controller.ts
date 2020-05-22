@@ -73,6 +73,7 @@ export const addMessage = async (conversationId: string, message: IMessage) => {
 export const getConversations = async (userId: string) => {
   const conversations = await Conversation.find({
     users: userId,
+    active: true
   })
     .populate("users")
     .populate({ path: "messages", 
@@ -88,7 +89,7 @@ export const getConversations = async (userId: string) => {
 
 export const deleteConversation = async (conversationId: string) => {
   const conversation = await Conversation.findOne({
-    id: conversationId,
+    _id: conversationId,
     active: true,
   });
 
