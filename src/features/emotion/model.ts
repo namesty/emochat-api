@@ -1,6 +1,11 @@
 import mongoose from 'mongoose'
 
 export const EmotionSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   Happy: {
     type: Number,
     required: true,

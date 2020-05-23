@@ -1,4 +1,7 @@
+import { IUser } from "../user";
+
 export interface IEmotion {
+  user: IUser | string
   Happy: number,
   Angry: number,
   Fear: number,

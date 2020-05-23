@@ -1,5 +1,5 @@
 import express from 'express'
-import { createConversation, getConversations, addMessage, deleteConversation } from './controller';
+import { createConversation, getConversations, addMessage, deleteConversation, getAvgEmotionsProvokedByMeInOthers, getAvgEmotionsProvokedByMeInUser, getAvgEmotionsProvokedInMe } from './controller';
 import { IUser } from '../user';
 import { IMessage } from '../message';
 
@@ -23,6 +23,32 @@ router.get("/", async (req, res) => {
   res.status(200).json(conversations)
 
 })
+
+router.get("/stats/others", async (req, res) => {
+  const user = req.user as any
+  const readings = await getAvgEmotionsProvokedByMeInOthers(user._id)
+
+  res.status(200).json(readings)
+
+})
+
+router.get("/stats/me", async (req, res) => {
+  const user = req.user as any
+  const readings = await getAvgEmotionsProvokedInMe(user._id)
+
+  res.status(200).json(readings)
+
+})
+
+router.get("/stats/user/:id", async (req, res) => {
+  const user = req.user as any
+  const otherUserId = req.params.id
+  const readings = await getAvgEmotionsProvokedByMeInUser(user._id, otherUserId)
+
+  res.status(200).json(readings)
+
+})
+
 
 router.put("/:id", async (req, res) => {
   const { id } = req.params

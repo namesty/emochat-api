@@ -3,8 +3,10 @@ import FormData from 'form-data'
 import { IMessage, messageMapper, MongooseMessage } from '../message'
 import { IEmotionDTO } from './emotion'
 import { Conversation } from '../conversation/model'
+import { MongooseUser, userMapper } from '../user'
 
 export const analyze = async (messages: IMessage[]) => {
+
   const messagesString = messages.reduce((prev, current, i) => {
     if(messages[i+1]) {
       return prev + `"${current.content}",`
@@ -48,6 +50,7 @@ export const analyze = async (messages: IMessage[]) => {
 }
 
 export const analyzeLastNMessages = async (n: number, conversationId:string) => {
+
   const conversation = await Conversation.findById(conversationId)
   .populate("users")
   .populate({ path: "messages", 
@@ -58,32 +61,30 @@ export const analyzeLastNMessages = async (n: number, conversationId:string) => 
   })
   .exec()
 
-  const messages: IMessage[] = (conversation.messages as MongooseMessage[])
-    .map(messageMapper)
-    .slice(-n)
+  const users = (conversation.users as MongooseUser[]).map(userMapper)
 
-  const reading = await analyze(messages)
-  console.log(reading)
-  conversation.emotions.push(reading)
-  await conversation.save()
+  await Promise.all(users.map(async (user) => {
+    const messages = (conversation.messages as MongooseMessage[])
+      .map(messageMapper)
+      .filter(m => m.from.email === user.email)
+      .slice(-n)
 
-  return reading
-}
-
-export const analyzeMessages = async (messages: IMessage[], conversationId: string) => {
-  const conversation = await Conversation.findById(conversationId)
-  .populate("users")
-  .populate({ path: "messages", 
-    populate: {
-      path: "from",
-      model: 'User'
+    if(messages.length > 0) {
+      const reading = await analyze(messages)
+      console.log(reading)
+      conversation.emotions.push(
+        {
+          user: user.id,
+          ...reading
+        }
+      )
     }
-  })
-  .exec()
+  }))
 
-  const reading = await analyze(messages)
-  conversation.emotions.push(reading)
-  await conversation.save()
+  const resultingConversation = await (await conversation.save()).populate({
+    path: "emotions.user",
+    model: 'User'
+  }).execPopulate()
 
-  return reading
+  return resultingConversation.emotions
 }
