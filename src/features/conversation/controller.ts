@@ -11,11 +11,25 @@ export async function createConversation(
           _id: uid,
         };
       }),
+      $size: userIds.length
     },
     active: true,
   })
     .populate("users")
+    .populate({
+      path: "messages",
+      populate: {
+        path: "from",
+        model: "User",
+      },
+    })
+    .populate({
+      path: "emotions.user",
+      model: "User"
+    })
     .exec();
+
+    console.log(conversation)
 
   if (!conversation) {
     conversation = await Conversation.create({
@@ -41,6 +55,10 @@ export const findConversation = async (id: string) => {
         model: "User",
       },
     })
+    .populate({
+      path: "emotions.user",
+      model: "User"
+    })
     .exec();
 };
 
@@ -56,6 +74,7 @@ export const addMessage = async (conversationId: string, message: IMessage) => {
     $push: {
       messages: populatedMessage,
     },
+    active: true
   })
     .populate("users")
     .populate({
@@ -64,6 +83,10 @@ export const addMessage = async (conversationId: string, message: IMessage) => {
         path: "from",
         model: "User",
       },
+    })
+    .populate({
+      path: "emotions.user",
+      model: "User"
     })
     .exec();
 
@@ -85,6 +108,10 @@ export const getConversations = async (userId: string) => {
         model: "User",
       },
     })
+    .populate({
+      path: "emotions.user",
+      model: "User"
+    })
     .exec();
 
   return conversations.map(conversationMapper);
@@ -92,9 +119,21 @@ export const getConversations = async (userId: string) => {
 
 export const deleteConversation = async (conversationId: string) => {
   const conversation = await Conversation.findOne({
-    _id: conversationId,
-    active: true,
-  });
+    _id: conversationId
+  })
+  .populate("users")
+  .populate({
+    path: "messages",
+    populate: {
+      path: "from",
+      model: "User",
+    },
+  })
+  .populate({
+    path: "emotions.user",
+    model: "User"
+  })
+  .exec();
 
   if (!conversation) throw new Error("No conversation found with this id");
 

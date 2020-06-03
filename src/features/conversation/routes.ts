@@ -3,6 +3,8 @@ import { createConversation, getConversations, addMessage, deleteConversation, g
 import { IUser } from '../user';
 import { IMessage } from '../message';
 
+//TODO: renaming a controladores y rutas
+
 const router = express.Router();
 
 router.post("/", async (req, res) => {
@@ -39,16 +41,6 @@ router.get("/stats/me", async (req, res) => {
   res.status(200).json(readings)
 
 })
-
-router.get("/stats/user/:id", async (req, res) => {
-  const user = req.user as any
-  const otherUserId = req.params.id
-  const readings = await getAvgEmotionsProvokedByMeInUser(user._id, otherUserId)
-
-  res.status(200).json(readings)
-
-})
-
 
 router.put("/:id", async (req, res) => {
   const { id } = req.params
