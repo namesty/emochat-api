@@ -2,7 +2,7 @@ import axios from 'axios'
 import FormData from 'form-data'
 import { IMessage, messageMapper, MongooseMessage } from '../message'
 import { IEmotionDTO } from './emotion'
-import { Conversation } from '../conversation/model'
+import { Conversation, IConversation } from '../conversation/model'
 import { MongooseUser, userMapper } from '../user'
 
 export const analyze = async (messages: IMessage[]) => {
@@ -81,10 +81,14 @@ export const analyzeLastNMessages = async (n: number, conversationId:string) => 
     }
   }))
 
-  const resultingConversation = await (await conversation.save()).populate({
-    path: "emotions.user",
-    model: 'User'
-  }).execPopulate()
+  const modifiedConversation = await conversation.save()
+
+  const resultingConversation: IConversation = await Conversation.populate(
+    modifiedConversation,
+    {
+      path: "emotions.user",
+      model: 'User'
+    })
 
   return resultingConversation.emotions
 }
