@@ -3,8 +3,6 @@ import { IConversation, Conversation } from '../../conversation/model'
 import { createConversation, addMessage } from '../../conversation/controller'
 import { analyzeLastNMessages } from '../controller'
 
-jest.setTimeout(20000)
-
 describe("Conversation", () => {
 
   let testUser: MongooseUser,
@@ -46,6 +44,45 @@ describe("Conversation", () => {
     expect(emotions.length).toEqual(1)
     expect((emotions[0].user as IUser).id).toEqual(testUser.id)
     expect(emotions[0].Sad).toBeGreaterThan(0)
+
+    conversationsCreated.push(conversation)
+    done()
+  })
+
+  it('Throws if n < 1', async done => {
+    const conversation = await createConversation([testUser.id, testUser2.id])
+    await addMessage(conversation.id, {
+      id: '',
+      date: '1591142997470',
+      from: userMapper(testUser),
+      content: 'I am feeling really sad today'
+    })
+
+    expect(analyzeLastNMessages(0, conversation.id)).rejects.toThrow(
+      /N must be a natural number/i
+    )
+
+    conversationsCreated.push(conversation)
+    done()
+  })
+
+  it('Sadness is the predominant emotion read from a sad message', async done => {
+    const conversation = await createConversation([testUser.id, testUser2.id])
+    await addMessage(conversation.id, {
+      id: '',
+      date: '1591142997470',
+      from: userMapper(testUser),
+      content: 'I am feeling really sad today'
+    })
+
+    const emotions = await analyzeLastNMessages(1, conversation.id)
+
+    expect(emotions[0].Sad).toBeGreaterThan(0)
+    expect(emotions[0].Sad).toBeGreaterThan(emotions[0].Angry)
+    expect(emotions[0].Sad).toBeGreaterThan(emotions[0].Happy)
+    expect(emotions[0].Sad).toBeGreaterThan(emotions[0].Excited)
+    expect(emotions[0].Sad).toBeGreaterThan(emotions[0].Fear)
+    expect(emotions[0].Sad).toBeGreaterThan(emotions[0].Bored)
 
     conversationsCreated.push(conversation)
     done()

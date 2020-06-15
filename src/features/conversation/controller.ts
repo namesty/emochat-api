@@ -1,9 +1,16 @@
 import { Conversation, IConversation, conversationMapper } from "./model";
 import { IMessage, Message } from "../message";
+import { CustomError } from '../../errors';
 
 export async function createConversation(
   userIds: string[]
 ): Promise<IConversation> {
+  if (userIds.length < 2)
+    throw new CustomError(
+      "BadParameters",
+      "At least two user IDs must be provided to create a conversation"
+    );
+
   let conversation = await Conversation.findOne({
     users: {
       $all: userIds.map((uid) => {
@@ -11,7 +18,7 @@ export async function createConversation(
           _id: uid,
         };
       }),
-      $size: userIds.length
+      $size: userIds.length,
     },
     active: true,
   })
@@ -25,11 +32,9 @@ export async function createConversation(
     })
     .populate({
       path: "emotions.user",
-      model: "User"
+      model: "User",
     })
     .exec();
-
-    console.log(conversation)
 
   if (!conversation) {
     conversation = await Conversation.create({
@@ -43,6 +48,9 @@ export async function createConversation(
 }
 
 export const findConversation = async (id: string) => {
+  if (!id)
+    throw new CustomError("BadParameters", "Conversation ID not provided");
+
   return await Conversation.findOne({
     _id: id,
     active: true,
@@ -57,25 +65,34 @@ export const findConversation = async (id: string) => {
     })
     .populate({
       path: "emotions.user",
-      model: "User"
+      model: "User",
     })
     .exec();
 };
 
 export const addMessage = async (conversationId: string, message: IMessage) => {
+  if (!message.from.id || !message.content)
+    throw new CustomError(
+      "BadParameters",
+      "Message sender ID or content not found"
+    );
+
   const createdMessage = await Message.create({
     from: message.from.id,
     content: message.content,
+    date: message.date,
   });
 
   const populatedMessage = await createdMessage.populate("from").execPopulate();
 
-  const conversation = await Conversation.findByIdAndUpdate(conversationId, {
+  await Conversation.findByIdAndUpdate(conversationId, {
     $push: {
       messages: populatedMessage,
     },
-    active: true
-  })
+    active: true,
+  });
+
+  const conversation = await Conversation.findById(conversationId)
     .populate("users")
     .populate({
       path: "messages",
@@ -86,16 +103,19 @@ export const addMessage = async (conversationId: string, message: IMessage) => {
     })
     .populate({
       path: "emotions.user",
-      model: "User"
+      model: "User",
     })
     .exec();
 
-  if (!conversation) throw new Error("No conversation found with this id");
+  if (!conversation)
+    throw new CustomError("NotFound", "No conversation found with this id");
 
   return conversationMapper(conversation);
 };
 
 export const getConversations = async (userId: string) => {
+  if (!userId) throw new CustomError("BadParameters", "User ID not provided");
+
   const conversations = await Conversation.find({
     users: userId,
     active: true,
@@ -110,7 +130,7 @@ export const getConversations = async (userId: string) => {
     })
     .populate({
       path: "emotions.user",
-      model: "User"
+      model: "User",
     })
     .exec();
 
@@ -118,22 +138,25 @@ export const getConversations = async (userId: string) => {
 };
 
 export const deleteConversation = async (conversationId: string) => {
+  if (!conversationId)
+    throw new CustomError("BadParameters", "Conversation ID not provided");
+
   const conversation = await Conversation.findOne({
-    _id: conversationId
+    _id: conversationId,
   })
-  .populate("users")
-  .populate({
-    path: "messages",
-    populate: {
-      path: "from",
+    .populate("users")
+    .populate({
+      path: "messages",
+      populate: {
+        path: "from",
+        model: "User",
+      },
+    })
+    .populate({
+      path: "emotions.user",
       model: "User",
-    },
-  })
-  .populate({
-    path: "emotions.user",
-    model: "User"
-  })
-  .exec();
+    })
+    .exec();
 
   if (!conversation) throw new Error("No conversation found with this id");
 
@@ -144,14 +167,16 @@ export const deleteConversation = async (conversationId: string) => {
 };
 
 export const getAvgEmotionsProvokedByMeInOthers = async (userId: string) => {
+  if (!userId) throw new CustomError("BadParameters", "User ID not provided");
+
   const averages = await Conversation.aggregate([
     { $unwind: "$emotions" },
     {
       $match: {
         users: {
-          $in: [userId]
-        }
-      }
+          $in: [userId],
+        },
+      },
     },
     {
       $group: {
@@ -170,25 +195,26 @@ export const getAvgEmotionsProvokedByMeInOthers = async (userId: string) => {
     {
       $match: {
         user: {
-          $ne: userId
-        }
-      }
-    }
-  ])
+          $ne: userId,
+        },
+      },
+    },
+  ]);
 
-  return await populateAverages(averages)
-
+  return await populateAverages(averages);
 };
 
 export const getAvgEmotionsProvokedInMe = async (userId: string) => {
+  if (!userId) throw new CustomError("BadParameters", "User ID not provided");
+
   const averages = await Conversation.aggregate([
     { $unwind: "$emotions" },
     {
       $match: {
         users: {
-          $in: [userId]
-        }
-      }
+          $in: [userId],
+        },
+      },
     },
     {
       $group: {
@@ -207,27 +233,30 @@ export const getAvgEmotionsProvokedInMe = async (userId: string) => {
     {
       $match: {
         user: {
-          $eq: userId
-        }
-      }
-    }
-  ])
+          $eq: userId,
+        },
+      },
+    },
+  ]);
 
-  return await populateAverages(averages)
-
+  return await populateAverages(averages);
 };
 
-export const getAvgEmotionsProvokedByMeInUser = async (userId: string, otherUserId: string) => {
-  
-  console.log(otherUserId)
+export const getAvgEmotionsProvokedByMeInUser = async (
+  userId: string,
+  otherUserId: string
+) => {
+  if (!userId || !otherUserId)
+    throw new CustomError("BadParameters", "2 user IDs must be provided");
+
   const averages = await Conversation.aggregate([
     { $unwind: "$emotions" },
     {
       $match: {
         users: {
-          $in: [userId]
-        }
-      }
+          $in: [userId],
+        },
+      },
     },
     {
       $group: {
@@ -246,22 +275,18 @@ export const getAvgEmotionsProvokedByMeInUser = async (userId: string, otherUser
     {
       $match: {
         user: {
-          $eq: otherUserId
-        }
-      }
-    }
-  ])
+          $eq: otherUserId,
+        },
+      },
+    },
+  ]);
 
-  return await populateAverages(averages)
-
+  return await populateAverages(averages);
 };
 
 async function populateAverages(averages: any[]) {
-  return await Conversation.populate(
-    averages,
-    {
-      path: "user",
-      model: "User",
-    }
-  )
+  return await Conversation.populate(averages, {
+    path: "user",
+    model: "User",
+  });
 }
