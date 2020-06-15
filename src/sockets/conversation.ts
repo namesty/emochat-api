@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 import { IMessage } from "../features/message";
 import { addMessage } from '../features/conversation/controller'
 
-//TODO: Luxon en lugar de moment
 interface ConnectedUser {
   user: IUser;
   socket: Socket;
@@ -16,12 +15,10 @@ interface NewMessageData {
   message: IMessage
 }
 
-//TODO: pasar el puerto a variable semantica (DotEnv)
-
 export class ConversationSocket {
 
   private connectedUsers: ConnectedUser[] = []
-  private server = io(3500)
+  private server = io(process.env.WS_PORT)
 
   constructor() {
     this.server.sockets.on('connection', this.onConnect)
@@ -36,10 +33,6 @@ export class ConversationSocket {
 
   private findBySocket = (socket: Socket) => {
     return this.connectedUsers.find(u => lodash.isEqual(u.socket, socket))
-  }
-
-  private findByEmail = (email: string) => {
-    return this.connectedUsers.find((u) => u.user.email.toString() === email);
   }
 
   private onSendToken = (socket: Socket, data: any) => {
