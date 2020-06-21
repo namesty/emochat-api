@@ -31,10 +31,10 @@ passport.use(
     try {
       const user = await User.findOne({ email });
 
-      if (!user) next(null, false, { message: "El usuario no existe" });
+      if (!user) next(null, false, { message: "User does not exist" });
 
       if (!bcrypt.compareSync(password, user.password))
-        next(null, false, { message: "la contraseña no es correcta" });
+        next(null, false, { message: "Invalid password" });
 
       next(null, user);
     } catch (error) {

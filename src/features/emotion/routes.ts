@@ -16,9 +16,9 @@ router.post("/last/:n", async (req, res) => {
     console.log(e.stack)
 
     if(e instanceof CustomError) {
-      res.status(e.code).json(e.clientMessage)
+      res.status(e.code).json({error: e.clientMessage})
     } else {
-      res.status(500).json('Internal server error')
+      res.status(500).json({error: 'Internal server error'})
     }
   }
 
