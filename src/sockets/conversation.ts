@@ -4,6 +4,7 @@ import lodash, { isEqual } from "lodash";
 import jwt from "jsonwebtoken";
 import { IMessage } from "../features/message";
 import { addMessage } from '../features/conversation/controller'
+import { Server } from "http";
 
 interface ConnectedUser {
   user: IUser;
@@ -18,9 +19,10 @@ interface NewMessageData {
 export class ConversationSocket {
 
   private connectedUsers: ConnectedUser[] = []
-  private server = io(process.env.WS_PORT)
+  private server: io.Server
 
-  constructor() {
+  constructor(expressServer: Server) {
+    this.server = io(expressServer)
     this.server.sockets.on('connection', this.onConnect)
   }
 

@@ -87,8 +87,8 @@ const server = (callback?: () => any) => app.listen(PORT, () => {
 })
 
 if(process.env.MODE !== 'test') {
-  server()
-  new ConversationSocket()
+  const expressServer = server()
+  new ConversationSocket(expressServer)
 }
 
 export default server
