@@ -2,25 +2,37 @@ import { User, MongooseUser, userMapper, IUser } from '../../user'
 import { IConversation, Conversation } from '../../conversation/model'
 import { createConversation, addMessage } from '../../conversation/controller'
 import { analyzeLastNMessages } from '../controller'
+import setupServer from "../../../";
+import mongoose from "mongoose"
+import { Server } from 'http';
+import { ConversationSocket } from '../../../sockets/conversation';
 
 describe("Conversation", () => {
 
   let testUser: MongooseUser,
     testUser2: MongooseUser,
     conversationsCreated: IConversation[] = []
+  let conversationSocket = new ConversationSocket()
+  let server: Server
 
-  beforeAll(async () => {
-    require('../../../')
+  beforeAll((done) => {
+    server = setupServer(done)
+  })
+
+  beforeEach(async () => {
     testUser = await User.findOne({ email: process.env.TEST_USER_EMAIL })
     testUser2 = await User.findOne({ email: process.env.TEST_USER2_EMAIL })
   })
 
-  afterAll(async () => {
+  afterAll(async (done) => {
     await Promise.all(
       conversationsCreated.map(async (c) => {
         await Conversation.findByIdAndDelete(c.id).exec()
       })
     )
+    await mongoose.disconnect()
+    conversationSocket.disconnect()
+    server.close(done)
   })
 
   it('analyzes last 2 messages', async done => {

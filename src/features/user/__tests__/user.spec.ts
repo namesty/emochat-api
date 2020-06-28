@@ -1,10 +1,23 @@
 import { findAllUsers, findUser } from "../controller"
 import { User } from "../model"
+import setupServer from "../../../";
+import { Server } from "http";
+import mongoose from "mongoose";
+import { ConversationSocket } from "../../../sockets/conversation";
 
 describe("User", () => {
 
-  beforeAll(() => {
-    require('../../../')
+  let server: Server
+  let conversationSocket = new ConversationSocket()
+
+  beforeAll((done) => {
+    server = setupServer(done)
+  })
+
+  afterAll(async (done) => {
+    await mongoose.disconnect()
+    conversationSocket.disconnect()
+    server.close(done)
   })
 
   it('Gets list of all users', async () => {

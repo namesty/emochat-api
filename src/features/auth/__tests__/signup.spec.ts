@@ -1,13 +1,18 @@
+import mongoose from 'mongoose'
 import { IUser, User } from "../../user";
 import { signup } from '../signup'
+import setupServer from "../../../";
+import { Server } from "http";
 
 describe("Conversation", () => {
 
   let usersCreated: IUser[] = []
 
-  beforeAll(async () => {
-    require("../../../");
-  });
+  let server: Server
+
+  beforeAll((done) => {
+    server = setupServer(done)
+  })
 
   afterEach(async () => {
     await Promise.all(
@@ -16,6 +21,11 @@ describe("Conversation", () => {
       })
     );
   });
+
+  afterAll(async (done) => {
+    await mongoose.disconnect()
+    server.close(done)
+  })
 
   it('Creates user', async () => {
     const user = await signup({

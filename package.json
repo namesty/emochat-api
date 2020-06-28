@@ -7,7 +7,7 @@
     "build": "tsc",
     "prestart": "npm run build",
     "start": "node .",
-    "test": "npm run build && jest --forceExit",
+    "test": "npm run build && jest --forceExit --runInBand",
     "coverage": "jest --coverage"
   },
   "author": "",

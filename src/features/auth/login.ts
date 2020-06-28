@@ -8,7 +8,7 @@ const router = express.Router();
 router.post("/", (req, res) => {
   try {
     passport.authenticate("local", { session: false }, (error, user, info) => {
-      if(!user) res.status(500).json({error: info.message || 'An error has ocurred'})
+      if(!user) res.status(500).json({error: (info && info.message) || 'An error has ocurred'})
 
       const payload = {
         sub: user._id,

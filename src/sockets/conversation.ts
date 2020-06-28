@@ -24,6 +24,10 @@ export class ConversationSocket {
     this.server.sockets.on('connection', this.onConnect)
   }
 
+  disconnect() {
+    this.server.close()
+  }
+
   private onConnect = async (socket: Socket) => {
     socket.emit('askForToken')
     socket.on('sendToken', (data: any) => this.onSendToken(socket, data))

@@ -16,7 +16,6 @@ import { router as MainRouter } from './routes'
 import { router as AuthRouter } from './features/auth/routes'
 
 const app = express();
-const conversationHandler = new ConversationSocket()
 
 app.use(cors({ origin: '*'}))
 app.use(passport.initialize());
@@ -70,17 +69,26 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(passport.initialize())
 
-mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology:true })
-.then(() => {
-  console.log('Connected to Mongo Atlas')
-})
-.catch(err => {
-  throw new Error(err)
-})
-
 app.use('/', MainRouter)
 app.use('/auth', AuthRouter)
 
 const PORT = process.env.REST_PORT || process.env.PORT
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+const server = (callback?: () => any) => app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+  mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology:true })
+  .then(() => {
+    console.log('Connected to Mongo Atlas')
+    if(callback) callback()
+  })
+  .catch(err => {
+    throw new Error(err)
+  })
+})
+
+if(process.env.MODE !== 'test') {
+  server()
+  new ConversationSocket()
+}
+
+export default server

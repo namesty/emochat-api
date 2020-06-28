@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import { User, MongooseUser, userMapper } from "../../user";
 import {
   createConversation,
@@ -6,19 +7,27 @@ import {
   addMessage,
 } from "../controller";
 import { IConversation, Conversation } from "../model";
+import setupServer from "../../../";
+import { Server } from "http";
+import { ConversationSocket } from '../../../sockets/conversation';
 
 describe("Conversation", () => {
   let testUser: MongooseUser,
     testUser2: MongooseUser,
     testUser3: MongooseUser,
     conversationsCreated: IConversation[] = [];
+  let conversationSocket = new ConversationSocket()
+  let server: Server
 
-  beforeAll(async () => {
-    require("../../../");
+  beforeAll((done) => {
+    server = setupServer(done)
+  });
+
+  beforeEach(async () => {
     testUser = await User.findOne({ email: process.env.TEST_USER_EMAIL });
     testUser2 = await User.findOne({ email: process.env.TEST_USER2_EMAIL });
     testUser3 = await User.findOne({ email: process.env.TEST_USER3_EMAIL });
-  });
+  })
 
   afterEach(async () => {
     await Promise.all(
@@ -27,6 +36,12 @@ describe("Conversation", () => {
       })
     );
   });
+
+  afterAll(async (done) => {
+    await mongoose.disconnect()
+    conversationSocket.disconnect()
+    server.close(done)
+  })
 
   it("creates a new 2 people chat", async () => {
     const actual = await createConversation([testUser.id, testUser2.id]);
