@@ -72,7 +72,7 @@ app.use(passport.initialize())
 app.use('/', MainRouter)
 app.use('/auth', AuthRouter)
 
-const PORT = process.env.REST_PORT || process.env.PORT
+const PORT = process.env.PORT || process.env.REST_PORT
 
 const server = (callback?: () => any) => app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
