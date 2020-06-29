@@ -3,12 +3,10 @@ import { User } from "../model"
 import setupServer from "../../../";
 import { Server } from "http";
 import mongoose from "mongoose";
-import { ConversationSocket } from "../../../sockets/conversation";
 
 describe("User", () => {
 
   let server: Server
-  let conversationSocket = new ConversationSocket()
 
   beforeAll((done) => {
     server = setupServer(done)
@@ -16,7 +14,6 @@ describe("User", () => {
 
   afterAll(async (done) => {
     await mongoose.disconnect()
-    conversationSocket.disconnect()
     server.close(done)
   })
 

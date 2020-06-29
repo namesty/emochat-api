@@ -5,14 +5,12 @@ import { analyzeLastNMessages } from '../controller'
 import setupServer from "../../../";
 import mongoose from "mongoose"
 import { Server } from 'http';
-import { ConversationSocket } from '../../../sockets/conversation';
 
 describe("Conversation", () => {
 
   let testUser: MongooseUser,
     testUser2: MongooseUser,
     conversationsCreated: IConversation[] = []
-  let conversationSocket = new ConversationSocket()
   let server: Server
 
   beforeAll((done) => {
@@ -31,7 +29,6 @@ describe("Conversation", () => {
       })
     )
     await mongoose.disconnect()
-    conversationSocket.disconnect()
     server.close(done)
   })
 

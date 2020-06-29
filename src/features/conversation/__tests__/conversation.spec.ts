@@ -9,14 +9,12 @@ import {
 import { IConversation, Conversation } from "../model";
 import setupServer from "../../../";
 import { Server } from "http";
-import { ConversationSocket } from '../../../sockets/conversation';
 
 describe("Conversation", () => {
   let testUser: MongooseUser,
     testUser2: MongooseUser,
     testUser3: MongooseUser,
     conversationsCreated: IConversation[] = [];
-  let conversationSocket = new ConversationSocket()
   let server: Server
 
   beforeAll((done) => {
@@ -39,7 +37,6 @@ describe("Conversation", () => {
 
   afterAll(async (done) => {
     await mongoose.disconnect()
-    conversationSocket.disconnect()
     server.close(done)
   })
 
