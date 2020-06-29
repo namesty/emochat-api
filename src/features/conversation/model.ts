@@ -1,10 +1,35 @@
 import mongoose from 'mongoose'
 import { IUser, MongooseUser, userMapper } from '../user'
-import { IMessage, MessageSchema, messageMapper, MongooseMessage } from '../message'
+import { IMessage, messageMapper, MongooseMessage } from '../message'
 import { IEmotion } from '../emotion'
 import { EmotionSchema } from '../emotion/model'
 
-//TODO: la parte de mongoose va en infastructure. Las interfaces no se prefijan con 'I'
+/**
+ * @swagger
+ * definitions:
+ *  Conversation:
+ *    type: object
+ *    properties:
+ *      user:
+ *        type: array
+ *        items:
+ *          type: User
+ *          $ref: '#/definitions/User'
+ *      messages:
+ *        type: array
+ *        items:
+ *          type: Message
+ *          $ref: '#/definitions/Message'
+ *      emotions:
+ *        type: array
+ *        items:
+ *          type: Emotion
+ *          $ref: '#/definitions/Emotion'
+ *      date:
+ *        type: string
+ *      active:
+ *        type: boolean
+ */
 
 export interface IConversation {
   id: string

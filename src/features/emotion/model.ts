@@ -1,5 +1,30 @@
 import mongoose from 'mongoose'
 
+/**
+ * @swagger
+ * definitions:
+ *  Emotion:
+ *    type: object
+ *    properties:
+ *      user:
+ *        $ref: '#/definitions/User'
+ *        type: User
+ *      Happy:
+ *        type: number
+ *      Angry:
+ *        type: number
+ *      Fear:
+ *        type: number
+ *      Bored:
+ *        type: number
+ *      Excited:
+ *        type: number
+ *      Sad:
+ *        type: number
+ *      date:
+ *        type: string
+ */
+
 export const EmotionSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,

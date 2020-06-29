@@ -9,16 +9,43 @@ import { Strategy as JwtStrategy } from "passport-jwt"
 import { ExtractJwt } from "passport-jwt"
 import bcrypt from "bcryptjs"
 import cors from 'cors'
+import swaggerUi from 'swagger-ui-express'
 import { ConversationSocket } from './sockets/conversation'
 import { User } from "./features/user"
 import { uri } from './config/db'
 import { router as MainRouter } from './routes'
 import { router as AuthRouter } from './features/auth/routes'
+import swaggerJSDoc from "swagger-jsdoc"
+
+const swaggerDefinition = {
+  info: {
+    title: 'Emochat API',
+    description: 'Emochat API Information',
+    version: '1.0.0'
+  },
+  securityDefinitions: {
+    bearerAuth: {
+      type: 'apiKey',
+      name: 'Authorization',
+      scheme: 'bearer',
+      in: 'header',
+    },
+  },
+}
+
+const swaggerDocs = swaggerJSDoc({
+  swaggerDefinition,
+  apis: [
+    'src/features/**/routes.ts',
+    'src/features/**/model.ts'
+  ]
+})
 
 const app = express();
 
 app.use(cors({ origin: '*'}))
 app.use(passport.initialize());
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 
 passport.use(
   new LocalStrategy(  {

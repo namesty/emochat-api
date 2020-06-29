@@ -1,6 +1,6 @@
 import express from "express";
 import bcrypt from "bcryptjs";
-import { User, userMapper } from "../user";
+import { User } from "../user";
 import { CustomError } from "../../errors";
 
 const router = express.Router();

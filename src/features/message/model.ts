@@ -1,6 +1,24 @@
 import mongoose from 'mongoose'
 import { IUser, MongooseUser, userMapper } from '../user'
 
+/**
+ * @swagger
+ * definitions:
+ *  Message:
+ *    type: object
+ *    properties:
+ *      id:
+ *        type: string
+ *      from:
+ *        type: User
+ *        $ref: '#/definitions/User'
+ *      content:
+ *        type: string
+ *      date:
+ *        type: string
+ */
+
+
 export interface IMessage {
   id: string,
   from: IUser,

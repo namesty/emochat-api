@@ -1,5 +1,26 @@
 import mongoose from 'mongoose'
 
+/**
+ * @swagger
+ * definitions:
+ *  User:
+ *    type: object
+ *    properties:
+ *      id:
+ *        type: string
+ *      name:
+ *        type: string
+ *      lastName:
+ *        type: string
+ *      email:
+ *        type: string
+ *      password:
+ *        type: string
+ *        format: password
+ *      date:
+ *        type: string
+ */
+
 export interface IUser {
   id: string
   name: string
